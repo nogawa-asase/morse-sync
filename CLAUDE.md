@@ -3,8 +3,7 @@
 ## 技術スタック
 
 - 開発環境: devcontainer
-- HTML / CSS / JavaScript のみ(ビルドツール・npmパッケージなし)
-- データ取得: Wikidata API(ブラウザから直接呼び出し)
+- HTML / CSS / JavaScript のみ(ビルドツール・npmパッケージなし。配信物に含めない開発時のテスト・静的解析ツールは devDependencies で使用)
 - 描画: SVG
 - 公開先: GitHub Pages(静的ファイルのみ)
 
