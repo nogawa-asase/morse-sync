@@ -1,0 +1,430 @@
+/* モールスシンク 全画面共通のスタイル
+   CSPのため、インラインスタイル・<style> は使わない。動的な色は JS から CSSOM で設定する */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #111111;
+  --color-surface: #1d1d1d;
+  --color-border: #3a3a3a;
+  --color-text: #f2f2f2;
+  --color-muted: #b0b0b0;
+  --color-accent: #ffcc00;
+  --color-accent-text: #111111;
+  --color-error: #ff8a80;
+  --color-warning: #ffd180;
+  --radius: 12px;
+  --tap-size: 44px;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Hiragino Sans',
+    'Noto Sans JP',
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+
+/* ---- 画面共通 ---- */
+
+.screen {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.screen__header {
+  margin-bottom: 16px;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.warning {
+  margin: 8px 0 0;
+  color: var(--color-warning);
+}
+
+.card {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.button {
+  min-width: var(--tap-size);
+  min-height: var(--tap-size);
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.button--primary {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font-weight: bold;
+}
+
+.button:focus-visible,
+.link-button:focus-visible,
+.join-button:focus-visible,
+.field__input:focus-visible,
+.field__color:focus-visible {
+  outline: 3px solid #80d8ff;
+  outline-offset: 2px;
+}
+
+.link-button {
+  min-height: var(--tap-size);
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #80d8ff;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 12px 0 0;
+  color: var(--color-muted);
+}
+
+.hint--small {
+  font-size: 0.875rem;
+}
+
+.share-url {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  word-break: break-all;
+  user-select: all;
+  -webkit-user-select: all;
+}
+
+/* ---- 作成画面 ---- */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.field--inline .field__label {
+  min-width: 5em;
+  margin: 0;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.field__hint {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.field__input {
+  width: 100%;
+  min-height: var(--tap-size);
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #000000;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1.125rem;
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.field__input--number {
+  width: 5.5em;
+}
+
+.field__color {
+  width: var(--tap-size);
+  height: var(--tap-size);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.color-text {
+  font-family: ui-monospace, monospace;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 3em;
+  height: var(--tap-size);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.highlighted {
+  margin: 8px 0 0;
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+
+.highlighted mark {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: var(--color-error);
+  color: #000000;
+}
+
+.code-text {
+  min-height: 1.6em;
+  margin: 8px 0 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  word-break: break-word;
+}
+
+.cycle {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.errors {
+  margin: 8px 0 0;
+  padding-left: 1.25em;
+  color: var(--color-error);
+}
+
+.errors:empty {
+  display: none;
+}
+
+.qr-box {
+  width: min(100%, 320px);
+  margin: 0 auto;
+}
+
+.qr-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.share-status {
+  min-height: 1.6em;
+  margin: 8px 0 0;
+}
+
+/* ---- QRコードの全画面表示 ---- */
+
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #111111;
+}
+
+.qr-overlay__qr {
+  width: min(92vw, 78vh);
+  max-width: 900px;
+}
+
+.qr-overlay__status {
+  min-height: 1.6em;
+  margin: 8px 0 0;
+}
+
+.qr-overlay .share-url {
+  max-width: 92vw;
+  color: #333333;
+}
+
+.qr-overlay .button:not(.button--primary) {
+  border-color: #999999;
+  background: #eeeeee;
+  color: #111111;
+}
+
+/* ---- 参加画面 ---- */
+
+.join-before {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.pattern-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  width: 100%;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.pattern-summary dt {
+  color: var(--color-muted);
+}
+
+.pattern-summary dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.pattern-summary__message {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+/* PRD: ボタンの高さ・幅は画面の短辺の30%以上 */
+.join-button {
+  width: max(60vmin, 200px);
+  max-width: 100%;
+  height: max(36vmin, 120px);
+  min-width: 30vmin;
+  min-height: 30vmin;
+  border: none;
+  border-radius: 24px;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font: inherit;
+  font-size: clamp(1.5rem, 7vmin, 3rem);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 点滅用の全画面要素。背景色だけを切り替え、レイアウトを変えない */
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #000000;
+  color: #666666;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage__char {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.stage__countdown {
+  margin: 0;
+  color: #dddddd;
+  font-size: clamp(1.5rem, 8vmin, 3rem);
+  font-weight: bold;
+}
+
+.stage__hint {
+  margin: 8px 0 0;
+  color: #999999;
+  text-align: center;
+}
+
+.stage__paused {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #dddddd;
+}
+
+.join-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.85);
+  cursor: default;
+}
+
+/* ---- 読込エラー ---- */
+
+.error-view {
+  text-align: center;
+}
+
+.error-view__message {
+  margin: 24px 0;
+  color: var(--color-error);
+  font-size: 1.125rem;
+}

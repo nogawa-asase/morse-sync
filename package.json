@@ -1,24 +1,24 @@
 {
-  "name": "claude-code-book-chapter8",
+  "name": "morse-sync",
   "version": "0.1.0",
-  "description": "Claude Code book - Chapter 8 template",
+  "description": "QRコードを読むだけで、みんなのスマホが揃ってモールス信号を光らせるWebサービス",
   "type": "module",
   "scripts": {
     "prepare": "husky",
-    "build": "tsc",
-    "dev": "tsc --watch",
     "lint": "eslint .",
-    "format": "npx prettier --write .",
-    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit -p jsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "check-size": "node scripts/check-size.js",
+    "serve": "node scripts/serve.js"
   },
   "keywords": [
-    "spec-driven-development",
-    "claude-code",
-    "template"
+    "morse-code",
+    "sync",
+    "qrcode",
+    "github-pages"
   ],
   "author": "",
   "license": "MIT",
@@ -28,6 +28,7 @@
     "@vitest/ui": "^2.0.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.15.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.0",
@@ -36,7 +37,7 @@
     "vitest": "^2.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.js": [
       "eslint --fix",
       "prettier --write"
     ]

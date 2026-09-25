@@ -6,9 +6,13 @@ CLAUDE.md
 
 # ログファイル
 *log.json
+output.jsonl
 
 # 依存関係
 node_modules/
 
-# ビルド成果物
-dist/
+# 同梱ライブラリ(改変しない)
+public/vendor/
+
+# テスト結果
+coverage/

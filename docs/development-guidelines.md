@@ -59,7 +59,7 @@ URLのキー(`v` `l` `m` `p` `u` `c`)は `core/config-codec.js` の中だけで�
 
 ### 型(JSDoc)
 
-型定義は `public/js/core/types.js` に `@typedef` で集め、各ファイルは `@import` 相当のコメントで参照する。
+型定義は `public/js/core/types.js` に `@typedef` で集め、各ファイルは `/** @typedef {import('./types.js').PatternConfig} PatternConfig */` の形で参照する(TypeScript 5.3 の型検査では JSDoc の `@import` タグが使えないため)。
 
 ```javascript
 // public/js/core/types.js

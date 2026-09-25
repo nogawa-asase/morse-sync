@@ -1,32 +1,66 @@
-# claude-code-book-chapter8
+# モールスシンク(morse-sync)
 
-本リポジトリは技術評論社より発行されている[「実践Claude Code入門 - 現場で活用するためのAIコーディングの思考法」](https://www.amazon.co.jp/dp/4297153548)のサンプルコードを管理するGitHubリポジトリです。
+QRコードを読むだけで、みんなのスマホが揃ってモールス信号を光らせるWebサービスです。
 
-リポジトリ内のコード・プロンプトに関する詳細な解説は、書籍をご覧ください。
+- **QRコードを読んでタップするだけ**: インストール・登録・許可なしで参加できます
+- **サーバーなしで揃う**: 各端末の時計を基準に開始時刻を計算するため、端末同士やサーバーとの通信なしに何台でも同期します
+- **設定はURLに全部入る**: メッセージ・速さ・色をURLに入れ、QRコードで配ります
 
-書籍の内容に関するご質問、不備のご指摘については以下のリポジトリのイシューよりお願いいたします。
-
-https://github.com/GenerativeAgents/claude-code-book
-
-## 注意事項
-
-本リポジトリの内容は読者からのフィードバックを受けて、より性能の良いプロンプトに変更されることがあります。差分は随時書籍に反映されますが、お手元の版との差分があることをご承知おきください。
+> ⚠ 光の点滅に敏感な方はご注意ください。
 
 ## 使い方
 
-### 1. リポジトリのクローン
+### 主催者
 
-```bash
-git clone [このリポジトリ] claude-code-book-chapter8
-cd claude-code-book-chapter8
+1. ページを開き、メッセージ(英字・数字・一部の記号)、1拍の長さ、点灯色を決めます
+2. 表示されたQRコードを参加者に見せます(「拡大表示」で画面いっぱいに表示できます)
+3. 自分も参加するときは「このパターンで参加」を押します
+
+### 参加者
+
+1. QRコードをスマホの標準カメラで読み取ります
+2. 「タップして参加」を押します。次の開始時刻から、周りと揃って画面が点滅します
+3. 点滅中に画面をタップすると、「QRコードを見せる」「一時停止」などのメニューが開きます
+
+端末の時刻は「自動設定」にしてください。自動設定でないと、周りとずれることがあります。
+
+## 設定URLの形式
+
+```
+https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00
 ```
 
-### 2. Dev Container経由で開く
+| キー | 内容                                         | 省略時   |
+| ---- | -------------------------------------------- | -------- |
+| v    | 仕様バージョン(必須)                         | -        |
+| l    | 文字の種類                                   | `en`     |
+| m    | メッセージ(必須)                             | -        |
+| p    | 同期の周期・秒(必須。作成画面が自動で決める) | -        |
+| u    | 1拍の長さ・ミリ秒(200〜2000)                 | `250`    |
+| c    | 点灯色(16進6桁)                              | `ffcc00` |
 
-Visual Studio Codeで「Reopen in Container」を選択すると、自動的に次のように環境構築が行われます。
+## 開発
 
-- Node.js LTS環境の構築
-- npm installの実行
-- Claude Codeの最新版インストール
+ビルドツールを使わず、`public/` のHTML / CSS / JavaScript(ES Modules)をそのまま配信します。npmは開発ツール(テスト・静的解析・型検査)にだけ使います。
 
-※ Dev Containerを利用する際は、事前にDockerのインストールが必要です。
+```bash
+npm install          # 開発ツールのインストール(devcontainerでは自動)
+npm run serve        # public/ を http://localhost:8080/ で配信
+npm test             # ユニットテスト(Vitest)
+npm run test:coverage
+npm run lint         # ESLint
+npm run typecheck    # JSDocの型検査(tsc --noEmit -p jsconfig.json)
+npm run check-size   # 配信物の転送量(gzip後100KB以内)の検査
+npm run format       # Prettier
+```
+
+- 設計・仕様は `docs/`、作業ごとの計画と記録は `.steering/` にあります
+- `main` へのpushでCIが成功すると、GitHub Actionsで `public/` をGitHub Pagesに公開します(リポジトリの Settings → Pages で Source を「GitHub Actions」にしてください)
+
+## ライセンス
+
+MIT。同梱の [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)(`public/vendor/`)もMITライセンスです。
+
+---
+
+本リポジトリは書籍[「実践Claude Code入門 - 現場で活用するためのAIコーディングの思考法」](https://www.amazon.co.jp/dp/4297153548)のテンプレートから作成しました。

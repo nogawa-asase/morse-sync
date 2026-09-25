@@ -235,7 +235,10 @@ erDiagram
 function normalizeMessage(input: string, table: MorseTable): string;
 function encodeMessage(normalized: string, table: MorseTable): EncodedMessage;
 function formatCode(code: string): string;   // '.-' → '・−'(表示用)
+function formatEncodedMessage(encoded: EncodedMessage): string; // 作成画面の符号表示。文字は空白区切り、単語の区切りは '/'、対応外は '?'
 ```
+
+- 文字はコードポイント単位で扱う(絵文字を1文字として報告し、文字数・`sourceIndex` もコードポイントで数える)
 
 **依存関係**:
 - 変換表(`tables/en.js`、P1で `tables/ja.js`)
@@ -248,8 +251,9 @@ function formatCode(code: string): string;   // '.-' → '・−'(表示用)
 
 **インターフェース**:
 ```typescript
-function buildTimeline(encoded: EncodedMessage): Timeline;
-function cycleMs(timeline: Timeline, unitMs: number): number; // totalUnits * unitMs
+function buildTimeline(encoded: EncodedMessage): Timeline;   // 符号が null(対応外)の文字は無視する
+function cycleMsOf(timeline: Timeline, unitMs: number): number; // totalUnits * unitMs
+function findSegment(segments: OnSegment[], elapsedUnits: number): OnSegment | null; // 二分探索
 ```
 
 #### PeriodPlanner
@@ -288,7 +292,20 @@ function toHash(config: PatternConfig): string;          // '#v=1&l=en&m=HELLO&p
 function toShareUrl(config: PatternConfig, baseUrl: string): string;
 function parseHash(hash: string): ValidationResult;      // 参加画面用
 function buildFromInput(input: CreateInput): ValidationResult; // 作成画面用(周期を自動決定)
+function previewInput(input: CreateInput): MessagePreview;     // 作成画面の表示用(エラーがあっても符号・所要時間を出す)
+function buildConfigTimeline(config: PatternConfig): Timeline; // 参加画面の再生用
 ```
+
+```typescript
+interface MessagePreview {
+  normalized: string;        // 正規化後のメッセージ
+  encoded: EncodedMessage;   // 符号化結果(対応外の文字の強調表示に使う)
+  cycleMs: number | null;    // 1周分の所要時間。空・対応外の文字あり・1拍が不正なら null(60秒超でも値を返す)
+}
+```
+
+- エラーはすべて同時に返す。ただし `v` の欠落・未知のバージョンはその時点で打ち切る
+- `TOO_LONG_FOR_60S` と、`p` が所要時間より短いことによる `INVALID_PERIOD` は、メッセージと1拍がともに有効なときだけ判定する
 
 ```typescript
 interface CreateInput {
@@ -312,6 +329,12 @@ interface CreateInput {
 **インターフェース**:
 ```typescript
 function startRouter(root: HTMLElement): void;
+
+// 各画面に渡す画面遷移の操作。画面から location を直接触らせない
+interface Navigate {
+  toJoin(config: PatternConfig): void;     // location.hash を設定(hashchange で参加画面になる)
+  toCreate(config?: PatternConfig): void;  // history.pushState でハッシュを消し、設定を引き継いで作成画面を表示
+}
 ```
 
 #### CreateScreen(作成画面)
@@ -322,7 +345,7 @@ function startRouter(root: HTMLElement): void;
 
 **インターフェース**:
 ```typescript
-function mountCreateScreen(root: HTMLElement, initial?: PatternConfig): () => void; // 戻り値はアンマウント関数
+function mountCreateScreen(root: HTMLElement, initial: PatternConfig | undefined, navigate: Navigate): () => void; // 戻り値はアンマウント関数
 ```
 
 #### JoinScreen(参加画面)
@@ -334,7 +357,7 @@ function mountCreateScreen(root: HTMLElement, initial?: PatternConfig): () => vo
 
 **インターフェース**:
 ```typescript
-function mountJoinScreen(root: HTMLElement, config: PatternConfig, cycleMs: number): () => void;
+function mountJoinScreen(root: HTMLElement, config: PatternConfig, navigate: Navigate): () => void;
 ```
 
 #### Player
@@ -383,8 +406,8 @@ class WakeLockKeeper {
 
 | コンポーネント | 責務 | 主なインターフェース |
 |--------------|------|------------------|
-| FullscreenHelper | 対応ブラウザでのみ全画面化。非対応(iPhone Safari)では何もしない | `enter(el): Promise<boolean>` / `exit()` |
-| ShareHelper | Web Share API があれば共有シート、なければクリップボードにコピー | `share(url): Promise<'shared' \| 'copied' \| 'cancelled' \| 'failed'>` |
+| FullscreenHelper | 対応ブラウザでのみ全画面化。非対応(iPhone Safari)では何もしない | `enterFullscreen(el): Promise<boolean>` / `exitFullscreen()` |
+| ShareHelper | Web Share API があれば共有シート、なければ(または共有に失敗したら)クリップボードにコピー | `shareUrl(url): Promise<'shared' \| 'copied' \| 'cancelled' \| 'failed'>` |
 | QrView | URLからQRコードをSVGで生成して要素に描画 | `renderQr(el, url, { margin: 4 })` |
 
 ## ユースケース図
@@ -730,7 +753,7 @@ export function stateAt(now, firstStart, timeline, unitMs, periodMs) {
 | 参加前 | メッセージ、1拍の長さ、「タップして参加」ボタン(短辺の30%以上)、明るさの案内、光過敏の注意書き、「パターンを作る」リンク、時計に関するヘルプ |
 | 待機中 | 黒背景に「開始まで あと8秒」のカウントダウン |
 | 点滅中 | 画面全体が点灯色 / 黒。上部に小さく送信中の文字(表示切替可) |
-| メニュー表示 | 点滅を続けたまま、画面下部に「QRコードを見せる」「一時停止」 |
+| メニュー表示 | 点滅を続けたまま、画面下部に「QRコードを見せる」「一時停止」「送信中の文字を表示/隠す」 |
 | QR表示 | 白背景に画面いっぱいのQRコード、「共有」「戻る」 |
 | 一時停止 | 黒背景に「再開」ボタン |
 
@@ -818,6 +841,7 @@ https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00
 | メッセージが空 | 作成画面 | QRを隠す | メッセージを入力してください |
 | メッセージが50文字超 | 作成画面 | QRを隠す | メッセージは50文字以内にしてください |
 | 1拍の長さが範囲外 | 作成画面 | QRを隠す | 1拍の長さは200〜2000ミリ秒で入力してください |
+| 点灯色の形式が不正 | 作成画面 | QRを隠す | 点灯色を選び直してください(カラーピッカーでは通常起きない) |
 | 60秒に収まらない | 作成画面 | QRを隠す | 60秒以内に収まりません。メッセージを短くするか、1拍を短くしてください |
 | 未知のバージョン | 参加画面 | 点滅しない | このQRコードは新しいバージョン用です。ページを再読み込みしてください |
 | その他のURL不正 | 参加画面 | 点滅しない。作成画面へのリンク | QRコードの内容が正しくありません |

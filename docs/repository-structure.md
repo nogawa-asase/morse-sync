@@ -31,7 +31,8 @@ morse-sync/
 │   └── unit/
 │       └── core/                  # public/js/core/ と同じ構造
 ├── scripts/                       # 開発・CI用のNode.jsスクリプト(公開しない)
-│   └── check-size.js              # 配信物の転送量(gzip後)が100KB以内か検査
+│   ├── check-size.js              # 配信物の転送量(gzip後)が100KB以内か検査
+│   └── serve.js                   # public/ をローカルで配信(手動確認用)
 ├── docs/                          # 永続ドキュメント
 │   └── ideas/                     # 壁打ち・アイデアメモ
 ├── .steering/                     # 作業単位のドキュメント
@@ -92,7 +93,7 @@ core/
 ```
 player/
 ├── player.js              # Player クラス
-├── screen-output.js       # ScreenOutput(全画面要素の背景色を切替)
+├── screen-output.js       # ScreenOutput(全画面要素の背景色を切替)。Output インターフェースの @typedef もここに置く
 ├── torch-output.js        # (P1) TorchOutput(フラッシュ)
 └── beep-output.js         # (P2) BeepOutput(音)
 ```
@@ -199,6 +200,7 @@ tests/unit/
 
 **配置ファイル**:
 - `check-size.js`: `public/` の全ファイルをgzip圧縮した合計サイズを計算し、100KBを超えたら失敗する
+- `serve.js`: `public/` をローカルで配信する(`npm run serve`。開発時のみ。依存パッケージを増やさないためNode.js標準の `http` で実装)
 
 **規則**:
 - ビルド・変換を行うスクリプトは置かない(ビルドなしの方針)
@@ -354,7 +356,7 @@ core/           vendor/
 
 ## 既存ファイルの扱い(初回の実装時に整理する)
 
-本リポジトリは書籍のテンプレート(TypeScript向け)から作成したため、以下を初回の実装作業で整理する。
+本リポジトリは書籍のテンプレート(TypeScript向け)から作成したため、以下を初回の実装作業(`.steering/20260924-mvp-core-features/`)で整理した。作業用のファイル(表の最終行)は未整理で、開発者の判断を待つ。
 
 | 既存ファイル | 扱い |
 |------------|------|
