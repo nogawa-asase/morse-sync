@@ -9,6 +9,7 @@ const AUTO_CLOSE_MS = 5000;
  * @property {() => void} onShowQr     「QRコードを見せる」
  * @property {() => void} onPause      「一時停止」
  * @property {() => void} onToggleChar 送信中の文字の表示切替
+ * @property {() => void} [onToggleFlash] フラッシュの切替(指定したときだけ項目を出す)
  */
 
 /**
@@ -18,6 +19,7 @@ const AUTO_CLOSE_MS = 5000;
  * @property {() => void} close                閉じる
  * @property {() => boolean} isOpen            開いているか
  * @property {(isVisible: boolean) => void} setCharVisible 表示切替ボタンの文言を合わせる
+ * @property {(isAvailable: boolean, isEnabled: boolean) => void} setFlashState フラッシュ項目の表示と文言を合わせる
  * @property {() => void} dispose              タイマーを止める
  */
 
@@ -70,6 +72,17 @@ export function createJoinMenu(handlers) {
     ]
   );
   toggleCharButton.setAttribute('role', 'menuitem');
+
+  const { onToggleFlash } = handlers;
+  const flashButton = onToggleFlash
+    ? createElement('button', {
+        className: 'button',
+        text: MESSAGES.menuFlashOn,
+        attrs: { type: 'button', role: 'menuitem' },
+        on: { click: () => onToggleFlash() },
+      })
+    : null;
+  if (flashButton) element.append(flashButton);
   setVisible(element, false);
 
   function open() {
@@ -91,6 +104,13 @@ export function createJoinMenu(handlers) {
       toggleCharButton.textContent = isVisible
         ? MESSAGES.hideCurrentChar
         : MESSAGES.showCurrentChar;
+    },
+    setFlashState: (isAvailable, isEnabled) => {
+      if (!flashButton) return;
+      setVisible(flashButton, isAvailable);
+      flashButton.textContent = isEnabled
+        ? MESSAGES.menuFlashOff
+        : MESSAGES.menuFlashOn;
     },
     dispose: () => clearTimeout(closeTimerId),
   };

@@ -43,6 +43,18 @@ export const MESSAGES = Object.freeze({
   showCurrentChar: '送信中の文字を表示',
   hideCurrentChar: '送信中の文字を隠す',
   back: '戻る',
+
+  // フラッシュ
+  useFlash: 'フラッシュも使う',
+  flashPermissionNote:
+    'フラッシュを使うためにカメラの許可が必要です。撮影・録画はしません',
+  flashUnsupported: 'この端末ではフラッシュを使えません',
+  flashDenied: 'カメラが許可されなかったため、フラッシュは使えません',
+  flashFailed: 'フラッシュを使えませんでした。もう一度お試しください',
+  flashUnitHint:
+    'フラッシュは切り替えが遅れることがあるため、1拍300ミリ秒以上をおすすめします',
+  menuFlashOn: 'フラッシュを使う',
+  menuFlashOff: 'フラッシュを止める',
   close: '閉じる',
 
   // 読込エラー

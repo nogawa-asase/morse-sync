@@ -25,3 +25,19 @@ export const MAX_MESSAGE_LENGTH = 50;
 
 /** 点灯色の既定値(小文字16進6桁、'#'なし) */
 export const DEFAULT_COLOR = 'ffcc00';
+
+/**
+ * フラッシュ(トーチ)を使うときにおすすめする1拍の下限(ミリ秒)。
+ * トーチは点灯・消灯の切替に遅れがあるため、画面点滅より長めにする。
+ * ※300msは実機検証で見直す(PRD 機能6)
+ */
+export const TORCH_RECOMMENDED_MIN_UNIT_MS = 300;
+
+/**
+ * フラッシュを使うには1拍が短すぎるか判定する(案内の表示に使う)。
+ * @param {number} unitMs 1拍の長さ(ミリ秒)
+ * @returns {boolean} おすすめの下限より短ければ true
+ */
+export function isUnitTooShortForTorch(unitMs) {
+  return unitMs < TORCH_RECOMMENDED_MIN_UNIT_MS;
+}

@@ -1,6 +1,7 @@
 import { buildConfigTimeline, toShareUrl } from '../core/config-codec.js';
 import { Player } from '../player/player.js';
 import { ScreenOutput } from '../player/screen-output.js';
+import { TorchOutput } from '../player/torch-output.js';
 import { WakeLockKeeper } from '../platform/wake-lock-keeper.js';
 import {
   enterFullscreen,
@@ -9,6 +10,7 @@ import {
 import { createElement, setVisible } from './dom.js';
 import { MESSAGES, formatUnit, formatCountdown } from './messages.js';
 import { createJoinMenu } from './join-menu.js';
+import { createJoinFlash } from './join-flash.js';
 import { showQrOverlay } from './qr-overlay.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
@@ -50,6 +52,8 @@ export function mountJoinScreen(root, config, navigate) {
   const messageChars = [...config.message];
   const wakeLock = new WakeLockKeeper();
   const shareUrlText = toShareUrl(config, location.href);
+  const torchOutput = new TorchOutput();
+  const flash = createJoinFlash(torchOutput, config.unitMs);
 
   // ---- 参加前 ----
   const beforeView = createElement(
@@ -70,6 +74,7 @@ export function mountJoinScreen(root, config, navigate) {
         createElement('dt', { text: MESSAGES.unitLabel }),
         createElement('dd', { text: formatUnit(config.unitMs) }),
       ]),
+      flash.element,
       createElement('button', {
         className: 'join-button',
         text: MESSAGES.tapToJoin,
@@ -131,6 +136,7 @@ export function mountJoinScreen(root, config, navigate) {
   const menu = createJoinMenu({
     onShowQr: () => showQr(),
     onPause: () => pause(),
+    onToggleFlash: flash.isAvailable() ? () => void flash.toggle() : undefined,
     onToggleChar: () => {
       isCharVisible = !isCharVisible;
       menu.setCharVisible(isCharVisible);
@@ -138,6 +144,10 @@ export function mountJoinScreen(root, config, navigate) {
     },
   });
   menu.setCharVisible(isCharVisible);
+  const syncMenuFlash = () =>
+    menu.setFlashState(flash.isAvailable(), flash.isEnabled());
+  flash.onChange(syncMenuFlash);
+  syncMenuFlash();
 
   const stage = createElement(
     'div',
@@ -167,7 +177,7 @@ export function mountJoinScreen(root, config, navigate) {
     buildConfigTimeline(config),
     config.unitMs,
     config.periodSec,
-    [screenOutput]
+    [screenOutput, torchOutput]
   );
   player.onFrame(renderFrame);
 
@@ -256,8 +266,12 @@ export function mountJoinScreen(root, config, navigate) {
   }
 
   const handleVisibilityChange = () => {
+    // iOSは背景に回るとカメラを止めるため、参加前でもフラッシュは手放して取り直す
+    const isHidden = document.visibilityState === 'hidden';
+    if (isHidden) flash.suspend();
+    else void flash.resume();
     if (state === 'before') return;
-    if (document.visibilityState === 'hidden') {
+    if (isHidden) {
       menu.close();
       if (state === 'running') stopPlayback();
       return;
@@ -275,6 +289,7 @@ export function mountJoinScreen(root, config, navigate) {
   return () => {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
     player.dispose();
+    flash.dispose();
     menu.dispose();
     closeQrOverlay?.();
     wakeLock.release();

@@ -386,6 +386,11 @@ class Player {
 **責務**:
 - ScreenOutput: 全画面の要素の背景色を点灯色 / `#000000` に切り替える
 - TorchOutput(P1): カメラの映像トラックに `applyConstraints({ advanced: [{ torch: isOn }] })` を適用する。映像は `<video>` 要素に接続せず、表示・保存しない
+  - 参加画面を作るときにトラックなしで生成して `ScreenOutput` と一緒に `Player` に渡し、カメラを取得できたら `attach(track)`、手放すときは `detach()` する(`Player` に出力先の追加・削除の仕組みを持たせないため)
+  - `setOn` は指示を記録して同期的に戻る。`applyConstraints` の適用中に次の指示が来たら、完了後に最新の指示だけを適用する(古い指示が後から適用されて点灯・消灯が逆転するのを防ぐ)
+  - トラックの取得・解放は `platform/camera-torch.js`(`isTorchLikelySupported` / `acquireTorchTrack` / `releaseTorchTrack`)が行う。背面カメラにトーチがなければ他のカメラを順に試し、結果を `{ ok: true, track }` か `{ ok: false, reason: 'unsupported' | 'denied' | 'failed' }` で返す
+  - 参加画面の「フラッシュも使う」ボタン・案内・オン/オフの状態は `ui/join-flash.js` が持つ。タブ切替・画面オフ(参加前を含む)でカメラを解放し、表示に戻ったらオンのときだけ取り直す(iOSは背景でカメラを止めるため)
+  - デスクトップのChromeは `getSupportedConstraints().torch` が真を返すため、事前の判定だけでは無効にならない。ボタンを押してカメラにトーチがないと分かった時点で無効にし「この端末ではフラッシュを使えません」と表示する
 
 #### WakeLockKeeper
 

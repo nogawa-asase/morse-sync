@@ -134,6 +134,7 @@ ui/
 ├── create-screen.js       # 作成画面
 ├── join-screen.js         # 参加画面(状態遷移の管理)
 ├── join-menu.js           # 参加画面のメニュー(自動で閉じるタイマーを含む)
+├── join-flash.js          # 参加画面の「フラッシュも使う」オプション(カメラの取得・解放と状態)
 ├── qr-overlay.js          # QRコードの全画面表示(作成画面の拡大・参加画面の「見せる」で共用)
 ├── error-view.js          # URL読込エラーの表示
 ├── messages.js            # 画面の文言とエラーコード → 文言の対応表
@@ -293,7 +294,7 @@ core/           vendor/
 | 追加する機能 | 配置 |
 |------------|------|
 | 和文モールス(P1) | `core/tables/ja.js` を追加、`core/tables.js` に登録 |
-| フラッシュ(P1) | `player/torch-output.js`、`platform/camera-torch.js` を追加 |
+| フラッシュ(P1) | `player/torch-output.js`、`platform/camera-torch.js`、`ui/join-flash.js` を追加(実装済み) |
 | オフライン(P1) | `public/sw.js`、`public/manifest.webmanifest`、`public/icons/` を追加 |
 | 音(P2) | `player/beep-output.js` を追加 |
 | 新しい画面(将来) | `ui/[画面名]-screen.js` を追加し、`ui/router.js` に登録 |

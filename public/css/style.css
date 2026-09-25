@@ -312,6 +312,34 @@ h1 {
   text-align: center;
 }
 
+/* フラッシュのオプション(参加前の画面) */
+.flash-option {
+  width: 100%;
+  margin: 0 0 16px;
+}
+
+.flash-toggle::before {
+  content: '○ ';
+}
+
+.flash-toggle[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.flash-toggle[aria-pressed='true']::before {
+  content: '● ';
+}
+
+.flash-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.flash-status {
+  color: var(--color-warning);
+}
+
 .pattern-summary {
   display: grid;
   grid-template-columns: auto 1fr;
