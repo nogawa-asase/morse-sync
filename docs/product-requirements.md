@@ -81,7 +81,8 @@
 | Android 10以降 | Chrome | 対応必須 | 対応必須 |
 | Windows / macOS | Chrome / Edge / Safari / Firefox 最新版 | 対応必須(主催者の設定・QR表示用途) | 対象外 |
 
-- iOS 16.4はSafariでScreen Wake Lock APIが利用可能になったバージョンのため下限とする(※仕様確定前に実機で要確認)
+- iOS 16.4はSafariでScreen Wake Lock APIが利用可能になったバージョンのため下限とする
+  - 2026-09-25: GitHub Pagesに公開した版で、iPhone(Safari)のWake Lockの動作(画面オフ・タブ切替からの再取得を含む)を実機で確認済み。iOS 16.4そのものでの動作は未確認
 
 ### 画面構成
 
