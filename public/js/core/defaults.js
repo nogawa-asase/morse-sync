@@ -29,9 +29,10 @@ export const DEFAULT_COLOR = 'ffcc00';
 /**
  * フラッシュ(トーチ)を使うときにおすすめする1拍の下限(ミリ秒)。
  * トーチは点灯・消灯の切替に遅れがあるため、画面点滅より長めにする。
- * ※300msは実機検証で見直す(PRD 機能6)
+ * iOS 26.5のSafariでは1拍250msでも画面点滅とそろって見えたため250msとした
+ * (2026-09-25 実機確認)。Android等で遅れが大きければ見直す(PRD 機能6)
  */
-export const TORCH_RECOMMENDED_MIN_UNIT_MS = 300;
+export const TORCH_RECOMMENDED_MIN_UNIT_MS = 250;
 
 /**
  * フラッシュを使うには1拍が短すぎるか判定する(案内の表示に使う)。

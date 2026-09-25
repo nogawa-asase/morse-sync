@@ -52,7 +52,7 @@ export const MESSAGES = Object.freeze({
   flashDenied: 'カメラが許可されなかったため、フラッシュは使えません',
   flashFailed: 'フラッシュを使えませんでした。もう一度お試しください',
   flashUnitHint:
-    'フラッシュは切り替えが遅れることがあるため、1拍300ミリ秒以上をおすすめします',
+    'フラッシュは切り替えが遅れることがあるため、1拍250ミリ秒以上をおすすめします',
   menuFlashOn: 'フラッシュを使う',
   menuFlashOff: 'フラッシュを止める',
   close: '閉じる',
