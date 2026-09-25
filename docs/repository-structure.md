@@ -72,6 +72,7 @@ core/
 ├── timeline.js            # buildTimeline / cycleMs / findSegment
 ├── period-planner.js      # PERIOD_CANDIDATES_SEC / choosePeriod / isValidPeriod
 ├── sync-clock.js          # currentCycleStart / nextCycleStart / stateAt
+├── timing-offset.js       # 開始のずれの手動補正(50ms単位、±1000ms)
 ├── config-codec.js        # toHash / toShareUrl / parseHash / buildFromInput
 ├── defaults.js            # 既定値と上下限(1拍250ms、200〜2000ms、50文字、色 ffcc00 など)
 └── types.js               # JSDocの @typedef のみ(PatternConfig、Timeline など)
@@ -137,6 +138,8 @@ ui/
 ├── qr-info-dialog.js      # 作成画面の「QRコードの中身」(URLと仕組みの説明)の小さなウインドウ
 ├── join-screen.js         # 参加画面(状態遷移の管理)
 ├── join-menu.js           # 参加画面のメニュー(自動で閉じるタイマーを含む)
+├── timing-adjuster.js     # メニューの開始のずれの補正の行(早く/遅く/0に戻す)
+├── timing-offset-store.js # 補正量をページを開いている間だけ覚える
 ├── join-before.js         # 参加画面のうち参加前の表示
 ├── join-flash.js          # 参加画面の「フラッシュも使う」オプション(カメラの取得・解放と状態)
 ├── qr-overlay.js          # QRコードの全画面表示(作成画面の拡大・参加画面の「見せる」で共用)

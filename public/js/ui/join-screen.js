@@ -1,4 +1,8 @@
-import { buildConfigTimeline, toShareUrl } from '../core/config-codec.js';
+import {
+  buildConfigTimeline,
+  toHash,
+  toShareUrl,
+} from '../core/config-codec.js';
 import { Player } from '../player/player.js';
 import { ScreenOutput } from '../player/screen-output.js';
 import { TorchOutput } from '../player/torch-output.js';
@@ -12,6 +16,8 @@ import { MESSAGES, formatCountdown } from './messages.js';
 import { createJoinMenu } from './join-menu.js';
 import { createJoinFlash } from './join-flash.js';
 import { createJoinBeforeView } from './join-before.js';
+import { createTimingAdjuster } from './timing-adjuster.js';
+import { getOffsetFor, setOffsetFor } from './timing-offset-store.js';
 import { showQrOverlay } from './qr-overlay.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
@@ -108,16 +114,30 @@ export function mountJoinScreen(root, config, navigate) {
   ]);
   setVisible(pausedPanel, false);
 
-  const menu = createJoinMenu({
-    onShowQr: () => showQr(),
-    onPause: () => pause(),
-    onToggleFlash: flash.isAvailable() ? () => void flash.toggle() : undefined,
-    onToggleChar: () => {
-      isCharVisible = !isCharVisible;
-      menu.setCharVisible(isCharVisible);
-      setVisible(currentChar, isCharVisible);
+  // 開始のずれの補正は、ページを開いている間だけ点灯パターンごとに覚える
+  const offsetKey = toHash(config);
+  const timingAdjuster = createTimingAdjuster(
+    getOffsetFor(offsetKey),
+    (offsetMs) => {
+      setOffsetFor(offsetKey, offsetMs);
+      player.setClockOffsetMs(offsetMs);
+    }
+  );
+  const menu = createJoinMenu(
+    {
+      onShowQr: () => showQr(),
+      onPause: () => pause(),
+      onToggleFlash: flash.isAvailable()
+        ? () => void flash.toggle()
+        : undefined,
+      onToggleChar: () => {
+        isCharVisible = !isCharVisible;
+        menu.setCharVisible(isCharVisible);
+        setVisible(currentChar, isCharVisible);
+      },
     },
-  });
+    timingAdjuster
+  );
   menu.setCharVisible(isCharVisible);
   const syncMenuFlash = () =>
     menu.setFlashState(flash.isAvailable(), flash.isEnabled());
@@ -154,6 +174,7 @@ export function mountJoinScreen(root, config, navigate) {
     config.periodSec,
     [screenOutput, torchOutput]
   );
+  player.setClockOffsetMs(getOffsetFor(offsetKey));
   player.onFrame(renderFrame);
 
   /**

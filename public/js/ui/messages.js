@@ -45,6 +45,10 @@ export const MESSAGES = Object.freeze({
   showQr: 'QRコードを見せる',
   pause: '一時停止',
   resume: '再開',
+  earlier: '◀ 早く',
+  later: '遅く ▶',
+  resetOffset: '0に戻す',
+  offsetLabel: '開始のずれの補正',
   backToCreate: 'パターンの作成に戻る',
   pausedLabel: '一時停止中',
   showCurrentChar: '送信中の文字を表示',
@@ -126,6 +130,16 @@ export function formatError(error) {
  */
 export function formatCycle(cycleMs) {
   return `${toWholeSeconds(cycleMs)}秒`;
+}
+
+/**
+ * 開始のずれの補正量を表示用にする。
+ * @param {number} offsetMs 補正量(ミリ秒)。正なら早く、負なら遅く
+ * @returns {string} 例: '補正なし'、'50ms早く'、'100ms遅く'
+ */
+export function formatOffset(offsetMs) {
+  if (offsetMs === 0) return '補正なし';
+  return offsetMs > 0 ? `${offsetMs}ms早く` : `${-offsetMs}ms遅く`;
 }
 
 /**

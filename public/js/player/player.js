@@ -26,6 +26,8 @@ export class Player {
   #lastIsOn = null;
   /** @type {number | null} */
   #rafId = null;
+  /** 開始のずれの手動補正(ミリ秒)。正なら早く点灯する */
+  #clockOffsetMs = 0;
 
   /**
    * @param {Timeline} timeline 1周分の点灯区間の列
@@ -38,6 +40,23 @@ export class Player {
     this.#unitMs = unitMs;
     this.#periodMs = periodSec * 1000;
     this.#outputs = outputs;
+  }
+
+  /**
+   * 開始のずれの手動補正を設定する。再生中でも次のフレームから反映する。
+   * 点灯判定に使う時刻をずらすだけなので、点灯の間隔は変わらない。
+   * @param {number} offsetMs 補正量(ミリ秒)。正なら早く、負なら遅く
+   */
+  setClockOffsetMs(offsetMs) {
+    this.#clockOffsetMs = offsetMs;
+  }
+
+  /**
+   * 点灯判定に使う時刻。端末間で共有できる壁時計に、手動補正を加えたもの。
+   * @returns {number}
+   */
+  #now() {
+    return Date.now() + this.#clockOffsetMs;
   }
 
   /**
@@ -54,7 +73,7 @@ export class Player {
    */
   start() {
     this.stop();
-    this.#firstStartMs = nextCycleStart(Date.now(), this.#periodMs);
+    this.#firstStartMs = nextCycleStart(this.#now(), this.#periodMs);
     this.#lastIsOn = null;
     this.#rafId = requestAnimationFrame(this.#tick);
   }
@@ -100,7 +119,7 @@ export class Player {
     // 次のフレームの予約を先に行い、以降で想定外の例外が出ても点滅を続ける
     this.#rafId = requestAnimationFrame(this.#tick);
     const state = stateAt(
-      Date.now(),
+      this.#now(),
       this.#firstStartMs,
       this.#timeline,
       this.#unitMs,

@@ -378,6 +378,7 @@ class Player {
   start(): void;                            // 次の開始時刻を記録して waiting から始める
   stop(): void;                             // ループ停止・全出力を消灯
   onFrame(listener: (s: PlaybackState) => void): void; // カウントダウン・送信中文字の表示用
+  setClockOffsetMs(offsetMs: number): void; // 開始のずれの手動補正(正なら早く)。再生中でも次のフレームから反映
 }
 ```
 
@@ -668,7 +669,8 @@ export function isValidPeriod(periodSec, cycleMs) {
 **目的**: 通信なしで全端末が同じ瞬間に同じ状態になり、長時間動かしても誤差が蓄積しないようにする
 
 **手順**(毎フレーム):
-1. `now = Date.now()`、`periodMs = periodSec × 1000`
+1. `now = Date.now() + clockOffsetMs`、`periodMs = periodSec × 1000`
+   - `clockOffsetMs` は参加者が手で合わせる開始のずれの補正(既定0、50ms単位、±1000ms。`core/timing-offset.js`)。正なら点灯判定の時刻が進み、早く点灯する。点灯の間隔は変わらない
 2. `start()` 時に `firstStart = nextCycleStart(now, periodMs)` を記録する
    - `nextCycleStart = ceil(now / periodMs) × periodMs`(ちょうど境界なら即開始)
 3. `now < firstStart` なら `phase = 'waiting'`、`isOn = false`、`msToNextStart = firstStart − now`
@@ -766,7 +768,7 @@ export function stateAt(now, firstStart, timeline, unitMs, periodMs) {
 | 参加前 | メッセージ、「タップして参加」ボタン(短辺の30%以上)、明るさの案内、光過敏の注意書き、「パターンを作る」リンク、時計に関するヘルプ |
 | 待機中 | 黒背景に「開始まで あと8秒」のカウントダウン |
 | 点滅中 | 画面全体が点灯色 / 黒。上部に小さく送信中の文字(表示切替可) |
-| メニュー表示 | 点滅を続けたまま、画面下部に「QRコードを見せる」「一時停止」「送信中の文字を表示/隠す」 |
+| メニュー表示 | 点滅を続けたまま、画面下部に「QRコードを見せる」「一時停止」「送信中の文字を表示/隠す」「フラッシュ」と、開始のずれの補正の行「◀ 早く / 補正量 / 遅く ▶ / 0に戻す」(`ui/timing-adjuster.js`)。補正量はページを開いている間だけ点灯パターンごとに覚える(`ui/timing-offset-store.js`) |
 | QR表示 | 白背景に画面いっぱいのQRコード、「共有」「戻る」 |
 | 一時停止 | 黒背景に「再開」と「パターンの作成に戻る」ボタン |
 

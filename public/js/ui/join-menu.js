@@ -27,9 +27,10 @@ const AUTO_CLOSE_MS = 5000;
  * 参加画面の下部に出すメニューを作る。点滅は止めずに重ねて表示する。
  *
  * @param {JoinMenuHandlers} handlers 各項目の処理
+ * @param {HTMLElement} [extraRow] メニューの最後に置く行(開始のずれの補正など)
  * @returns {JoinMenu}
  */
-export function createJoinMenu(handlers) {
+export function createJoinMenu(handlers, extraRow) {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let closeTimerId;
 
@@ -83,6 +84,7 @@ export function createJoinMenu(handlers) {
       })
     : null;
   if (flashButton) element.append(flashButton);
+  if (extraRow) element.append(extraRow);
   setVisible(element, false);
 
   function open() {

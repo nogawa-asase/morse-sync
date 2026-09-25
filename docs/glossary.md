@@ -417,6 +417,16 @@ ui/ ──→ player/ ──→ core/
 
 **関連ドキュメント**: `docs/architecture.md`、`docs/repository-structure.md`
 
+### 開始のずれの補正 (Clock offset)
+
+**定義**: 端末の時計のずれで、周りより点滅が早い・遅いときに、参加者が手で合わせる補正量(ミリ秒)
+
+**説明**: 点灯判定に使う時刻を `Date.now() + 補正量` にする。正なら早く、負なら遅く点灯する。1回50ms、上限±1000ms。点灯の間隔は変わらない。ページを開いている間だけ点灯パターンごとに覚え、端末には保存しない
+
+**実装箇所**: `public/js/core/timing-offset.js`、`public/js/player/player.js`(`setClockOffsetMs`)、`public/js/ui/timing-adjuster.js`
+
+**英語表記**: clock offset(`clockOffsetMs`)
+
 ### 出力先 (Output)
 
 **定義**: 点灯・消灯を実際の光や音に変えるもの。`setOn(isOn)` と `dispose()` を持つ
