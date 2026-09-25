@@ -37,7 +37,7 @@ ES2022を上限とする理由: iOS 16.4のSafariが対応する範囲に収め�
 | Web Share API | 共有シート | 非対応ならClipboard APIでコピー |
 | Clipboard API(`writeText`) | URLのコピー | 失敗時はURLを選択可能なテキストで表示 |
 | `hashchange` / `visibilitychange` | 設定の切替 / 中断・復帰 | 全ブラウザ対応 |
-| MediaDevices.getUserMedia + `torch` 制約(P1) | フラッシュ制御 | Android Chrome対応。iOSは実機検証(PRD 未決定事項5) |
+| MediaDevices.getUserMedia + `torch` 制約(P1) | フラッシュ制御 | Android Chrome対応。iOSは26.5のSafariで動作確認済み(PRD 未決定事項5) |
 | Service Worker + Cache Storage(P1) | オフライン対応 | 全対象ブラウザ対応。HTTPS必須 |
 
 ### フレームワーク・ライブラリ(配信物に含めるもの)
