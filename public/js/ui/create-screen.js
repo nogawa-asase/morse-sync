@@ -4,19 +4,14 @@ import {
   toShareUrl,
 } from '../core/config-codec.js';
 import { formatEncodedMessage } from '../core/morse-encoder.js';
-import {
-  DEFAULT_MESSAGE,
-  DEFAULT_UNIT_MS,
-  DEFAULT_COLOR,
-  MIN_UNIT_MS,
-  MAX_UNIT_MS,
-} from '../core/defaults.js';
+import { DEFAULT_MESSAGE, DEFAULT_COLOR } from '../core/defaults.js';
 import { renderQr } from '../platform/qr-view.js';
 import { shareUrl } from '../platform/share-helper.js';
 import { createElement, setVisible } from './dom.js';
 import { MESSAGES, formatError, formatCycle } from './messages.js';
 import { showQrOverlay } from './qr-overlay.js';
 import { createColorField } from './color-field.js';
+import { createUnitOption } from './unit-option.js';
 import { showQrInfoDialog } from './qr-info-dialog.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
@@ -68,18 +63,7 @@ export function mountCreateScreen(root, initial, navigate) {
   });
   messageInput.value = initial?.message ?? DEFAULT_MESSAGE;
 
-  const unitInput = createElement('input', {
-    className: 'field__input field__input--number',
-    attrs: {
-      id: 'unit-input',
-      type: 'number',
-      inputmode: 'numeric',
-      min: String(MIN_UNIT_MS),
-      max: String(MAX_UNIT_MS),
-      step: '1',
-    },
-  });
-  unitInput.value = String(initial?.unitMs ?? DEFAULT_UNIT_MS);
+  const unitOption = createUnitOption(initial?.unitMs, () => update());
 
   const colorField = createColorField(
     'color-input',
@@ -209,21 +193,13 @@ export function mountCreateScreen(root, initial, navigate) {
       createElement('div', { className: 'field field--inline' }, [
         createElement('label', {
           className: 'field__label',
-          text: MESSAGES.unitLabel,
-          attrs: { for: 'unit-input' },
-        }),
-        unitInput,
-        createElement('span', { text: MESSAGES.unitSuffix }),
-      ]),
-      createElement('div', { className: 'field field--inline' }, [
-        createElement('label', {
-          className: 'field__label',
           text: MESSAGES.colorLabel,
           attrs: { for: 'color-input' },
         }),
         colorField.picker,
         colorField.hexInput,
       ]),
+      unitOption.element,
       createElement('p', { className: 'cycle' }, [
         document.createTextNode(`${MESSAGES.cycleLabel}: `),
         cycleValue,
@@ -236,7 +212,7 @@ export function mountCreateScreen(root, initial, navigate) {
   const update = () => {
     const input = {
       message: messageInput.value,
-      unitMs: unitInput.value,
+      unitMs: unitOption.getValue(),
       color: colorField.getValue(),
     };
     const preview = previewInput(input);
@@ -264,6 +240,12 @@ export function mountCreateScreen(root, initial, navigate) {
     colorField.setInvalid(
       !result.ok && result.errors.some((e) => e.code === 'INVALID_COLOR')
     );
+    if (
+      !result.ok &&
+      result.errors.some((e) => e.code === 'UNIT_OUT_OF_RANGE')
+    ) {
+      unitOption.open();
+    }
 
     clearTimeout(qrTimerId);
     shareStatus.textContent = '';
@@ -281,7 +263,6 @@ export function mountCreateScreen(root, initial, navigate) {
   };
 
   messageInput.addEventListener('input', update);
-  unitInput.addEventListener('input', update);
 
   root.append(screen);
   update();

@@ -5,7 +5,7 @@ export const SPEC_VERSION = 1;
 export const DEFAULT_LANG = 'en';
 
 /** 作成画面を開いたときのメッセージ */
-export const DEFAULT_MESSAGE = 'SOS';
+export const DEFAULT_MESSAGE = 'NO WAR';
 
 /** 1拍の長さの既定値(ミリ秒) */
 export const DEFAULT_UNIT_MS = 250;

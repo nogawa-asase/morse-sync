@@ -132,6 +132,7 @@ platform/
 ui/
 ├── router.js              # startRouter。ハッシュで画面を切替、hashchange を監視
 ├── create-screen.js       # 作成画面
+├── unit-option.js         # 作成画面の「オプション」(1拍の長さ)の開閉部分
 ├── color-field.js         # 作成画面の点灯色の欄(カラーピッカーと16進の入力欄の相互反映)
 ├── qr-info-dialog.js      # 作成画面の「QRコードの中身」(URLと仕組みの説明)の小さなウインドウ
 ├── join-screen.js         # 参加画面(状態遷移の管理)

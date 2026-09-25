@@ -192,6 +192,39 @@ h1 {
   width: 5.5em;
 }
 
+/* 作成画面の「オプション」(1拍の長さ) */
+.options {
+  margin: 16px 0 0;
+}
+
+.options summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-size);
+  padding: 8px 16px 8px 0;
+  color: var(--color-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.options summary::-webkit-details-marker {
+  display: none;
+}
+
+.options summary::before {
+  content: '▸';
+  margin-right: 6px;
+}
+
+.options[open] summary::before {
+  content: '▾';
+}
+
+.options summary:focus-visible {
+  outline: 3px solid #80d8ff;
+  outline-offset: 2px;
+}
+
 .field__color {
   width: var(--tap-size);
   height: var(--tap-size);
@@ -203,8 +236,9 @@ h1 {
 }
 
 .field__input--hex {
-  /* 幅320pxでもピッカーと同じ行に収まる幅 */
-  width: 6em;
+  /* 幅320pxでも「画面の点灯色」のラベル・ピッカーと同じ行に収まる幅 */
+  width: 5.25em;
+  padding-inline: 8px;
   font-family: ui-monospace, monospace;
 }
 

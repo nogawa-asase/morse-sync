@@ -1,3 +1,5 @@
+import { toWholeSeconds } from '../core/period-planner.js';
+
 /** @typedef {import('../core/types.js').ValidationError} ValidationError */
 /** @typedef {import('../core/types.js').ValidationErrorCode} ValidationErrorCode */
 
@@ -12,9 +14,10 @@ export const MESSAGES = Object.freeze({
   messageLabel: 'メッセージ',
   messageHint:
     '英字・数字・一部の記号(. , ? \' ! / ( ) & : ; = + - _ " $ @)と空白',
+  options: 'オプション',
   unitLabel: '1拍の長さ',
   unitSuffix: 'ミリ秒',
-  colorLabel: '点灯色',
+  colorLabel: '画面の点灯色',
   colorHexLabel: '点灯色(16進)',
   codeLabel: '符号',
   cycleLabel: 'メッセージの長さ',
@@ -69,7 +72,7 @@ export const MESSAGES = Object.freeze({
 export const QR_INFO = Object.freeze({
   title: 'このQRコードの内容は以下のとおりです。',
   structure:
-    '「#」より前はこのページの住所で、「#」より後ろに光らせ方の設定が入っています。設定は「記号=値」を「&」でつないだものです。記号を1文字にしてURLを短くし、QRコードを読み取りやすくしています。',
+    '「#」より前はこのページの住所で、「#」より後ろに点灯パターンの設定が入っています。設定は「記号=値」を「&」でつないだものです。',
   privacy:
     '「#」より後ろの設定はインターネットには送られず、読み取ったスマホの中だけで使われます。',
   keyHeader: '記号',
@@ -77,12 +80,12 @@ export const QR_INFO = Object.freeze({
   meaningHeader: '意味',
   /** @type {Readonly<Record<string, string>>} */
   keys: Object.freeze({
-    v: 'バージョン(決まりごとの版)。将来このページを作り替えても、今のQRコードを正しく読めるようにするための番号です',
+    v: 'このサービスのバージョン',
     l: '文字の種類。en は英字・数字のモールス信号です',
     m: '送るメッセージ。空白は %20 のように、記号の一部は「%」で始まる形に置き換えて入っています',
-    p: '繰り返しの間隔(秒)。みんなのスマホがそれぞれの時計を見て、この秒数ごとに一斉に最初から光り始めます。メッセージの長さに合わせて自動で決まります',
+    p: '繰り返しの間隔(秒)',
     u: '1拍の長さ(ミリ秒。1000ミリ秒で1秒)。短い光がこの長さになり、長い光はその3倍です',
-    c: '光る色。色を6桁の番号で表したものです(先頭の # は省いています)',
+    c: '光る色。色を6桁の番号で表したものです',
   }),
   unknownKey: 'このページでは使わない設定です',
 });
@@ -116,12 +119,13 @@ export function formatError(error) {
 }
 
 /**
- * 1周の長さを表示用にする(小数第1位まで)。
+ * 作成画面の「メッセージの長さ」を表示用にする。
+ * URLの p(周期)と同じ値になるよう、秒単位で切り上げる。
  * @param {number} cycleMs 1周分の所要時間(ミリ秒)
- * @returns {string} 例: '14.0秒'
+ * @returns {string} 例: '15秒'
  */
 export function formatCycle(cycleMs) {
-  return `${(cycleMs / 1000).toFixed(1)}秒`;
+  return `${toWholeSeconds(cycleMs)}秒`;
 }
 
 /**

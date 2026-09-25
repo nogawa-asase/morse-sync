@@ -1,9 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import {
   MAX_PERIOD_SEC,
+  toWholeSeconds,
   choosePeriod,
   isValidPeriod,
 } from '../../../public/js/core/period-planner.js';
+
+describe('toWholeSeconds', () => {
+  it('秒単位で切り上げる(8.5秒→9、14.0秒→14、14.001秒→15)', () => {
+    expect(toWholeSeconds(8500)).toBe(9);
+    expect(toWholeSeconds(14000)).toBe(14);
+    expect(toWholeSeconds(14001)).toBe(15);
+  });
+
+  it('1秒未満は1秒、60秒を超えても値を返す(表示用)', () => {
+    expect(toWholeSeconds(400)).toBe(1);
+    expect(toWholeSeconds(75000)).toBe(75);
+  });
+});
 
 describe('choosePeriod', () => {
   it('所要時間8.5秒(SOS)なら切り上げて周期9秒を返す', () => {

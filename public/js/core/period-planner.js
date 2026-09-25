@@ -4,6 +4,16 @@
 export const MAX_PERIOD_SEC = 60;
 
 /**
+ * 1周分の所要時間を秒単位で切り上げる(最小1秒)。
+ * 周期の自動決定と、作成画面の「メッセージの長さ」の表示で共用し、両者を必ず一致させる。
+ * @param {number} cycleMs 1周分の所要時間(ミリ秒)
+ * @returns {number} 秒(整数)
+ */
+export function toWholeSeconds(cycleMs) {
+  return Math.max(1, Math.ceil(cycleMs / 1000));
+}
+
+/**
  * 1周分の所要時間から、同期の周期を自動で決める。
  * 繰り返しの間の消灯を短くするため、所要時間を秒単位で切り上げる(最小1秒)。
  * 開始時刻は「UNIX時刻0から周期の倍数の時刻」なので、周期が何秒でも全端末で揃う。
@@ -14,7 +24,7 @@ export const MAX_PERIOD_SEC = 60;
  */
 export function choosePeriod(cycleMs) {
   if (cycleMs > MAX_PERIOD_SEC * 1000) return null;
-  return Math.max(1, Math.ceil(cycleMs / 1000));
+  return toWholeSeconds(cycleMs);
 }
 
 /**

@@ -1,3 +1,4 @@
+import { DEFAULT_MESSAGE } from '../../../public/js/core/defaults.js';
 import { describe, it, expect } from 'vitest';
 import {
   toHash,
@@ -221,6 +222,17 @@ describe('buildFromInput', () => {
       color: '#ffcc00',
     });
     expect(result.ok && result.config.periodSec).toBe(14);
+  });
+
+  it('既定のメッセージ NO WAR(60拍 = 15.0秒)は周期15秒になる', () => {
+    const result = buildFromInput({
+      message: DEFAULT_MESSAGE,
+      unitMs: '250',
+      color: '#ffcc00',
+    });
+    expect(DEFAULT_MESSAGE).toBe('NO WAR');
+    expect(result.ok && result.cycleMs).toBe(15000);
+    expect(result.ok && result.config.periodSec).toBe(15);
   });
 
   it('HELLO WORLD(29.5秒)は周期30秒になる', () => {
