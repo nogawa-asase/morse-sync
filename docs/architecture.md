@@ -35,7 +35,7 @@ ES2022を上限とする理由: iOS 16.4のSafariが対応する範囲に収め�
 | Screen Wake Lock API | スリープ防止 | iOS 16.4以降・Chrome対応。非対応なら案内表示のみ(機能設計書 エラーハンドリング) |
 | Fullscreen API | 全画面表示 | iPhone Safariは非対応。非対応なら通常表示で継続 |
 | Web Share API | 共有シート | 非対応ならClipboard APIでコピー |
-| Clipboard API(`writeText`) | URLのコピー | 失敗時はURLを選択可能なテキストで表示 |
+| Clipboard API(`writeText`) | URLのコピー | 失敗時は、作成画面では「QRコードの中身」のウインドウへ案内し、参加画面のQR表示ではURLを選択可能なテキストで表示 |
 | `hashchange` / `visibilitychange` | 設定の切替 / 中断・復帰 | 全ブラウザ対応 |
 | MediaDevices.getUserMedia + `torch` 制約(P1) | フラッシュ制御 | Android Chrome対応。iOSは26.5のSafariで動作確認済み(PRD 未決定事項5) |
 | Service Worker + Cache Storage(P1) | オフライン対応 | 全対象ブラウザ対応。HTTPS必須 |

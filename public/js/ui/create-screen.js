@@ -17,6 +17,7 @@ import { createElement, setVisible } from './dom.js';
 import { MESSAGES, formatError, formatCycle } from './messages.js';
 import { showQrOverlay } from './qr-overlay.js';
 import { createColorField } from './color-field.js';
+import { showQrInfoDialog } from './qr-info-dialog.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
 /** @typedef {import('../core/types.js').EncodedMessage} EncodedMessage */
@@ -97,7 +98,6 @@ export function mountCreateScreen(root, initial, navigate) {
   });
 
   const qrBox = createElement('div', { className: 'qr-box' });
-  const urlText = createElement('p', { className: 'share-url' });
   const shareStatus = createElement('p', {
     className: 'share-status',
     attrs: { role: 'status', 'aria-live': 'polite' },
@@ -108,7 +108,10 @@ export function mountCreateScreen(root, initial, navigate) {
     shareStatus.textContent = '';
     const result = await shareUrl(toShareUrl(currentConfig, location.href));
     if (result === 'copied') shareStatus.textContent = MESSAGES.shareCopied;
-    if (result === 'failed') shareStatus.textContent = MESSAGES.shareFailed;
+    // URLは画面に出していないため、「QRコードの中身」から写してもらう
+    if (result === 'failed') {
+      shareStatus.textContent = MESSAGES.shareFailedSeeQrInfo;
+    }
   };
 
   const handleEnlarge = () => {
@@ -127,6 +130,15 @@ export function mountCreateScreen(root, initial, navigate) {
     closeOverlay = close;
   };
 
+  const handleQrInfo = () => {
+    if (!currentConfig) return;
+    closeOverlay?.();
+    closeOverlay = showQrInfoDialog(
+      root,
+      toShareUrl(currentConfig, location.href)
+    );
+  };
+
   const qrSection = createElement(
     'section',
     {
@@ -135,7 +147,12 @@ export function mountCreateScreen(root, initial, navigate) {
     },
     [
       qrBox,
-      urlText,
+      createElement('button', {
+        className: 'link-button qr-info-link',
+        text: MESSAGES.qrInfo,
+        attrs: { type: 'button', 'aria-haspopup': 'dialog' },
+        on: { click: handleQrInfo },
+      }),
       createElement('div', { className: 'button-row' }, [
         createElement('button', {
           className: 'button',
@@ -254,13 +271,11 @@ export function mountCreateScreen(root, initial, navigate) {
       // 読み取れる古いQRコードが残らないよう、無効になったら即座に隠す
       currentConfig = null;
       qrBox.replaceChildren();
-      urlText.textContent = '';
       setVisible(qrSection, false);
       return;
     }
     currentConfig = result.config;
     const url = toShareUrl(result.config, location.href);
-    urlText.textContent = url;
     setVisible(qrSection, true);
     qrTimerId = setTimeout(() => renderQr(qrBox, url), QR_RENDER_DELAY_MS);
   };

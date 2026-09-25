@@ -133,8 +133,10 @@ ui/
 ├── router.js              # startRouter。ハッシュで画面を切替、hashchange を監視
 ├── create-screen.js       # 作成画面
 ├── color-field.js         # 作成画面の点灯色の欄(カラーピッカーと16進の入力欄の相互反映)
+├── qr-info-dialog.js      # 作成画面の「QRコードの中身」(URLと仕組みの説明)の小さなウインドウ
 ├── join-screen.js         # 参加画面(状態遷移の管理)
 ├── join-menu.js           # 参加画面のメニュー(自動で閉じるタイマーを含む)
+├── join-before.js         # 参加画面のうち参加前の表示
 ├── join-flash.js          # 参加画面の「フラッシュも使う」オプション(カメラの取得・解放と状態)
 ├── qr-overlay.js          # QRコードの全画面表示(作成画面の拡大・参加画面の「見せる」で共用)
 ├── error-view.js          # URL読込エラーの表示

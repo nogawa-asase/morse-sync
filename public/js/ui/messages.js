@@ -17,7 +17,7 @@ export const MESSAGES = Object.freeze({
   colorLabel: '点灯色',
   colorHexLabel: '点灯色(16進)',
   codeLabel: '符号',
-  cycleLabel: '1周の長さ',
+  cycleLabel: 'メッセージの長さ',
   cycleUnknown: '—',
   qrSectionLabel: '参加用のQRコード',
   enlargeQr: '拡大表示',
@@ -27,6 +27,9 @@ export const MESSAGES = Object.freeze({
   // 共有
   shareCopied: 'コピーしました',
   shareFailed: '共有できませんでした。URLをコピーしてください',
+  shareFailedSeeQrInfo:
+    '共有できませんでした。「QRコードの中身」からURLをコピーしてください',
+  qrInfo: 'QRコードの中身',
 
   // 参加画面
   tapToJoin: 'タップして参加',
@@ -39,6 +42,7 @@ export const MESSAGES = Object.freeze({
   showQr: 'QRコードを見せる',
   pause: '一時停止',
   resume: '再開',
+  backToCreate: 'パターンの作成に戻る',
   pausedLabel: '一時停止中',
   showCurrentChar: '送信中の文字を表示',
   hideCurrentChar: '送信中の文字を隠す',
@@ -59,6 +63,28 @@ export const MESSAGES = Object.freeze({
 
   // 読込エラー
   invalidUrl: 'QRコードの内容が正しくありません',
+});
+
+/** 「QRコードの中身」のウインドウの説明。コンピュータに詳しくない人にも分かる言葉で書く */
+export const QR_INFO = Object.freeze({
+  title: 'このQRコードの内容は以下のとおりです。',
+  structure:
+    '「#」より前はこのページの住所で、「#」より後ろに光らせ方の設定が入っています。設定は「記号=値」を「&」でつないだものです。記号を1文字にしてURLを短くし、QRコードを読み取りやすくしています。',
+  privacy:
+    '「#」より後ろの設定はインターネットには送られず、読み取ったスマホの中だけで使われます。',
+  keyHeader: '記号',
+  valueHeader: '値',
+  meaningHeader: '意味',
+  /** @type {Readonly<Record<string, string>>} */
+  keys: Object.freeze({
+    v: 'バージョン(決まりごとの版)。将来このページを作り替えても、今のQRコードを正しく読めるようにするための番号です',
+    l: '文字の種類。en は英字・数字のモールス信号です',
+    m: '送るメッセージ。空白は %20 のように、記号の一部は「%」で始まる形に置き換えて入っています',
+    p: '繰り返しの間隔(秒)。みんなのスマホがそれぞれの時計を見て、この秒数ごとに一斉に最初から光り始めます。メッセージの長さに合わせて自動で決まります',
+    u: '1拍の長さ(ミリ秒。1000ミリ秒で1秒)。短い光がこの長さになり、長い光はその3倍です',
+    c: '光る色。色を6桁の番号で表したものです(先頭の # は省いています)',
+  }),
+  unknownKey: 'このページでは使わない設定です',
 });
 
 /** @type {Readonly<Record<ValidationErrorCode, string>>} */
@@ -96,15 +122,6 @@ export function formatError(error) {
  */
 export function formatCycle(cycleMs) {
   return `${(cycleMs / 1000).toFixed(1)}秒`;
-}
-
-/**
- * 1拍の長さを表示用にする。
- * @param {number} unitMs 1拍の長さ(ミリ秒)
- * @returns {string} 例: '250ミリ秒'
- */
-export function formatUnit(unitMs) {
-  return `${unitMs}${MESSAGES.unitSuffix}`;
 }
 
 /**

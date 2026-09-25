@@ -8,9 +8,10 @@ import {
   exitFullscreen,
 } from '../platform/fullscreen-helper.js';
 import { createElement, setVisible } from './dom.js';
-import { MESSAGES, formatUnit, formatCountdown } from './messages.js';
+import { MESSAGES, formatCountdown } from './messages.js';
 import { createJoinMenu } from './join-menu.js';
 import { createJoinFlash } from './join-flash.js';
+import { createJoinBeforeView } from './join-before.js';
 import { showQrOverlay } from './qr-overlay.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
@@ -56,50 +57,12 @@ export function mountJoinScreen(root, config, navigate) {
   const flash = createJoinFlash(torchOutput, config.unitMs);
 
   // ---- 参加前 ----
-  const beforeView = createElement(
-    'main',
-    { className: 'screen join-before' },
-    [
-      createElement('h1', { text: MESSAGES.appTitle }),
-      createElement('p', {
-        className: 'warning',
-        text: `⚠ ${MESSAGES.photosensitivityWarning}`,
-      }),
-      createElement('dl', { className: 'pattern-summary' }, [
-        createElement('dt', { text: MESSAGES.messageLabel }),
-        createElement('dd', {
-          className: 'pattern-summary__message',
-          text: config.message,
-        }),
-        createElement('dt', { text: MESSAGES.unitLabel }),
-        createElement('dd', { text: formatUnit(config.unitMs) }),
-      ]),
-      flash.element,
-      createElement('button', {
-        className: 'join-button',
-        text: MESSAGES.tapToJoin,
-        attrs: { type: 'button' },
-        on: { click: () => join() },
-      }),
-      createElement('p', { className: 'hint', text: MESSAGES.brightnessHint }),
-      WakeLockKeeper.isSupported()
-        ? null
-        : createElement('p', {
-            className: 'hint',
-            text: MESSAGES.wakeLockUnsupported,
-          }),
-      createElement('p', {
-        className: 'hint hint--small',
-        text: MESSAGES.clockHelp,
-      }),
-      createElement('button', {
-        className: 'link-button',
-        text: MESSAGES.createPattern,
-        attrs: { type: 'button' },
-        on: { click: () => navigate.toCreate(config) },
-      }),
-    ]
-  );
+  const beforeView = createJoinBeforeView({
+    message: config.message,
+    flashElement: flash.element,
+    onJoin: () => join(),
+    onCreate: () => navigate.toCreate(config),
+  });
 
   // ---- 実行中(待機中・点滅中) ----
   const currentChar = createElement('p', {
@@ -127,6 +90,18 @@ export function mountJoinScreen(root, config, navigate) {
         click: (event) => {
           event.stopPropagation();
           resume();
+        },
+      },
+    }),
+    // 参加後に作成画面へ戻る手段がないため、一時停止の画面から戻れるようにする
+    createElement('button', {
+      className: 'button',
+      text: MESSAGES.backToCreate,
+      attrs: { type: 'button' },
+      on: {
+        click: (event) => {
+          event.stopPropagation();
+          navigate.toCreate(config);
         },
       },
     }),
@@ -217,6 +192,8 @@ export function mountJoinScreen(root, config, navigate) {
   function stopPlayback() {
     player.stop();
     countdown.textContent = '';
+    // 一時停止・QRコード表示中は画面をタップしてもメニューは開かないため隠す
+    setVisible(menuHint, false);
     currentChar.textContent = '';
     lastSecondsLeft = -1;
     lastCharIndex = null;
