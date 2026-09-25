@@ -31,7 +31,7 @@ QRコードを読むだけで、みんなのスマホが揃ってモールス信
 ## 設定URLの形式
 
 ```
-https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00
+https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=14&u=250&c=ffcc00
 ```
 
 | キー | 内容                                         | 省略時   |

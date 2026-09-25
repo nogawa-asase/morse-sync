@@ -69,7 +69,7 @@ URLのキー(`v` `l` `m` `p` `u` `c`)は `core/config-codec.js` の中だけで�
  * @property {1} version       仕様バージョン(URLの v)
  * @property {'en'} lang       文字の種類(URLの l)
  * @property {string} message  正規化済みメッセージ(URLの m)
- * @property {number} periodSec 同期の周期・秒(URLの p)。60の約数
+ * @property {number} periodSec 同期の周期・秒(URLの p)。1〜60の整数
  * @property {number} unitMs   1拍の長さ・ミリ秒(URLの u)
  * @property {string} color    点灯色。小文字16進6桁、'#'なし
  */
@@ -82,13 +82,14 @@ export {};
 
 /**
  * 1周分の所要時間から、同期の周期を自動で決める。
- * 繰り返しの間の消灯を短くするため、所要時間以上の60の約数のうち最短を選ぶ。
+ * 繰り返しの間の消灯を短くするため、所要時間を秒単位で切り上げる(最小1秒)。
  *
  * @param {number} cycleMs 1周分の所要時間(末尾の区切り7拍を含む)
  * @returns {number | null} 周期(秒)。60秒に収まらなければ null
  */
 export function choosePeriod(cycleMs) {
-  return PERIOD_CANDIDATES_SEC.find((p) => p * 1000 >= cycleMs) ?? null;
+  if (cycleMs > MAX_PERIOD_SEC * 1000) return null;
+  return Math.max(1, Math.ceil(cycleMs / 1000));
 }
 ```
 
@@ -208,7 +209,7 @@ Prettierの設定(`.prettierrc`)に従い、手で整形しない。
 
 ```javascript
 // ✅ 良い例: 理由を説明している
-// UNIX時刻0は分の0秒で、周期は60の約数なので、どの端末でも同じ開始時刻になる
+// 全端末が同じ起点(UNIX時刻0)から周期の倍数を数えるので、周期が何秒でも同じ開始時刻になる
 const cycleStartMs = Math.floor(nowMs / periodMs) * periodMs;
 
 // ❌ 悪い例: コードの言い換え
@@ -327,12 +328,12 @@ Conventional Commits に従う。件名は日本語で書く。
 ```
 feat(core): 同期の周期を所要時間から自動で決める
 
-1周分の所要時間以上となる60の約数のうち最短を選ぶ。
+1周分の所要時間を秒単位で切り上げる(最小1秒)。
 60秒を超える場合は null を返し、作成画面でQRコードを生成しない。
 
-- PERIOD_CANDIDATES_SEC を追加
+- MAX_PERIOD_SEC を追加
 - choosePeriod / isValidPeriod を追加
-- 境界値(10.0秒・10.1秒・60.1秒)のテストを追加
+- 境界値(14.0秒・14.001秒・60.1秒)のテストを追加
 ```
 
 ### プルリクエストプロセス
@@ -396,16 +397,16 @@ import { describe, it, expect } from 'vitest';
 import { choosePeriod, isValidPeriod } from '../../../public/js/core/period-planner.js';
 
 describe('choosePeriod', () => {
-  it('所要時間8.5秒なら周期10秒を返す', () => {
-    expect(choosePeriod(8500)).toBe(10);
+  it('所要時間8.5秒なら切り上げて周期9秒を返す', () => {
+    expect(choosePeriod(8500)).toBe(9);
   });
 
-  it('所要時間が候補とちょうど同じ10.0秒なら周期10秒を返す', () => {
-    expect(choosePeriod(10000)).toBe(10);
+  it('所要時間がちょうど14.0秒なら周期14秒を返す', () => {
+    expect(choosePeriod(14000)).toBe(14);
   });
 
-  it('所要時間10.1秒なら次の候補の12秒を返す', () => {
-    expect(choosePeriod(10100)).toBe(12);
+  it('所要時間14.001秒なら周期15秒を返す', () => {
+    expect(choosePeriod(14001)).toBe(15);
   });
 
   it('所要時間が60秒を超えたら null を返す', () => {
@@ -414,8 +415,8 @@ describe('choosePeriod', () => {
 });
 
 describe('isValidPeriod', () => {
-  it('60の約数でない周期は無効', () => {
-    expect(isValidPeriod(7, 1000)).toBe(false);
+  it('1〜60の範囲外の周期は無効', () => {
+    expect(isValidPeriod(61, 1000)).toBe(false);
   });
 });
 ```

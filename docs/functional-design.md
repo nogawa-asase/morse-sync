@@ -98,8 +98,8 @@ interface PatternConfig {
   color: string;          // 点灯色(URLの c)。小文字16進6桁、'#'なし 例: 'ffcc00'
 }
 
-// 60の約数のみ
-type PeriodSec = 1 | 2 | 3 | 4 | 5 | 6 | 10 | 12 | 15 | 20 | 30 | 60;
+// 1〜60の整数(秒)。以前の版は60の約数に限っていた
+type PeriodSec = number;
 ```
 
 **制約**:
@@ -259,12 +259,12 @@ function findSegment(segments: OnSegment[], elapsedUnits: number): OnSegment | n
 #### PeriodPlanner
 
 **責務**:
-- 1周分の所要時間から、同期の周期(60の約数)を自動決定する
+- 1周分の所要時間から、同期の周期(所要時間を秒単位で切り上げた値)を自動決定する
 - 参加側で、URLの周期が妥当か判定する
 
 **インターフェース**:
 ```typescript
-const PERIOD_CANDIDATES_SEC: PeriodSec[]; // [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60]
+const MAX_PERIOD_SEC = 60;
 function choosePeriod(cycleMs: number): PeriodSec | null; // 60秒を超えると null
 function isValidPeriod(periodSec: number, cycleMs: number): boolean;
 ```
@@ -288,7 +288,7 @@ function nextCycleStart(nowMs: number, periodMs: number): number;    // ceil
 
 **インターフェース**:
 ```typescript
-function toHash(config: PatternConfig): string;          // '#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00'
+function toHash(config: PatternConfig): string;          // '#v=1&l=en&m=HELLO&p=14&u=250&c=ffcc00'
 function toShareUrl(config: PatternConfig, baseUrl: string): string;
 function parseHash(hash: string): ValidationResult;      // 参加画面用
 function buildFromInput(input: CreateInput): ValidationResult; // 作成画面用(周期を自動決定)
@@ -640,22 +640,27 @@ export function buildTimeline(encoded) {
 
 **手順**:
 1. `cycleMs = totalUnits × unitMs`
-2. 候補 `[1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60]`(秒)を小さい順に見て、`候補 × 1000 >= cycleMs` となる最初の値を返す
-3. どれも満たさなければ `null`(`TOO_LONG_FOR_60S`)
+2. `cycleMs` が60,000を超えたら `null`(`TOO_LONG_FOR_60S`)
+3. それ以外は `max(1, ceil(cycleMs / 1000))` 秒
 
 ```javascript
-export const PERIOD_CANDIDATES_SEC = [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60];
+export const MAX_PERIOD_SEC = 60;
 
 export function choosePeriod(cycleMs) {
-  return PERIOD_CANDIDATES_SEC.find((p) => p * 1000 >= cycleMs) ?? null;
+  if (cycleMs > MAX_PERIOD_SEC * 1000) return null;
+  return Math.max(1, Math.ceil(cycleMs / 1000));
 }
 
 export function isValidPeriod(periodSec, cycleMs) {
-  return PERIOD_CANDIDATES_SEC.includes(periodSec) && periodSec * 1000 >= cycleMs;
+  return Number.isInteger(periodSec) && periodSec >= 1
+    && periodSec <= MAX_PERIOD_SEC && periodSec * 1000 >= cycleMs;
 }
 ```
 
-- 境界: 所要時間ちょうど(例: 10.0秒)は同じ値の周期(10秒)を選ぶ。末尾に7拍の区切りを含むため、ちょうどでも次の周の先頭と続けて読まれることはない
+- 周期は60の約数でなくてよい。開始時刻は `floor(now / periodMs) × periodMs`(UNIX時刻0から周期の倍数)なので、周期が何秒でも全端末で一致する(アルゴリズム4)
+- 秒の整数にするのは、URLの `p` の形式を変えないため(ミリ秒単位にすると仕様バージョンの変更が必要)。切り上げによる余分な消灯は1秒未満
+- 境界: 所要時間ちょうど(例: 14.0秒)は同じ値の周期(14秒)を選ぶ。末尾に7拍の区切りを含むため、ちょうどでも次の周の先頭と続けて読まれることはない
+- 以前の版(2026-09-25 まで)は60の約数(1〜60秒の12通り)から選んでいた。その版が作った `p` も1〜60の整数かつ所要時間以上なので、引き続き有効
 - 参加側は `isValidPeriod` で検証するだけで、周期を選び直さない(PRD 機能3)
 
 ### アルゴリズム4: 時刻からの点灯判定
@@ -691,7 +696,7 @@ export function stateAt(now, firstStart, timeline, unitMs, periodMs) {
 ```
 
 **正しさの根拠**:
-- UNIX時刻の0は「分の0秒」であり、周期はすべて60秒の約数なので、`floor(now / periodMs) × periodMs` はどの端末でも同じ時刻(例: 毎分0秒・15秒・30秒・45秒)になる
+- `floor(now / periodMs) × periodMs` は、共通の起点(UNIX時刻0)から周期の倍数の時刻なので、同じ時計を持つどの端末でも同じ時刻になる。周期が60の約数でなくてもよい(例: 周期15秒なら毎分0秒・15秒・30秒・45秒、周期32秒なら毎分0秒とは限らないが全端末で一致)
 - 前回からの経過時間を積み上げず、毎回 `now` から計算するため、フレーム落ちやタブのスロットリングがあっても誤差は蓄積しない
 - `findSegment` は区間が昇順で重ならないため二分探索でO(log n)。区間数は最大でも約350(50文字 × 最大7要素)
 
@@ -820,7 +825,7 @@ export function stateAt(now, firstStart, timeline, unitMs, periodMs) {
 
 **URLの例**:
 ```
-https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00
+https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=14&u=250&c=ffcc00
 ```
 
 ## パフォーマンス最適化
@@ -872,9 +877,9 @@ https://nogawa-asase.github.io/morse-sync/#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00
 
 - **MorseEncoder**: 全対応文字の符号、小文字の大文字化、空白の正規化、対応外の文字の検出(日本語・絵文字・全角英字)
 - **Timeline**: `E` / `SOS` / `HELLO` / `HELLO WORLD` の区間と `totalUnits`(上記の検算表と一致すること)
-- **PeriodPlanner**: 境界値(8.5秒→10、10.0秒→10、10.1秒→12、60.0秒→60、60.1秒→null)
+- **PeriodPlanner**: 境界値(8.5秒→9、14.0秒→14、14.001秒→15、31.2秒→32、0.4秒→1、60.0秒→60、60.1秒→null)、以前の版の `p`(15、60)が有効
 - **SyncClock / stateAt**: 周期の境界ちょうど、境界の1ms前後、待機中→点滅中の切替、1時間後(`now + 3,600,000`)でも区間の判定がずれないこと
-- **ConfigCodec**: 書き出し→読み込みで元に戻ること(往復テスト)、任意項目の省略、`v=2`、`p` の不正(60の約数でない・短すぎる)、色の不正、未知のキーの無視、`m` のURLエンコード
+- **ConfigCodec**: 書き出し→読み込みで元に戻ること(往復テスト)、任意項目の省略、`v=2`、`p` の不正(1〜60の整数でない・短すぎる)、色の不正、未知のキーの無視、`m` のURLエンコード
 
 ### 統合テスト(ブラウザでの手動確認)
 

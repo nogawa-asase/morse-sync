@@ -6,7 +6,7 @@
  * @property {1} version        仕様バージョン(URLの v)
  * @property {'en'} lang        文字の種類(URLの l)
  * @property {string} message   正規化済みメッセージ(URLの m)。1〜50文字
- * @property {number} periodSec 同期の周期・秒(URLの p)。60の約数
+ * @property {number} periodSec 同期の周期・秒(URLの p)。1〜60の整数
  * @property {number} unitMs    1拍の長さ・ミリ秒(URLの u)。200〜2000の整数
  * @property {string} color     点灯色(URLの c)。小文字16進6桁、'#'なし
  */

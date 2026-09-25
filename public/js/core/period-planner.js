@@ -1,31 +1,35 @@
 /**
- * 同期の周期の候補(秒)。60の約数に限ることで、毎分0秒がどの周期でも
- * 開始時刻になり、端末の時計だけで開始時刻を揃えられる。
+ * 同期の周期の上限(秒)。途中から参加した人が最初の開始時刻まで待つ時間を抑えるため。
  */
-export const PERIOD_CANDIDATES_SEC = Object.freeze([
-  1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60,
-]);
+export const MAX_PERIOD_SEC = 60;
 
 /**
  * 1周分の所要時間から、同期の周期を自動で決める。
- * 繰り返しの間の消灯を短くするため、所要時間以上の60の約数のうち最短を選ぶ。
+ * 繰り返しの間の消灯を短くするため、所要時間を秒単位で切り上げる(最小1秒)。
+ * 開始時刻は「UNIX時刻0から周期の倍数の時刻」なので、周期が何秒でも全端末で揃う。
+ * 秒の整数にするのは、URLの p(秒の整数)の形式を変えずに済ませるため。
  *
  * @param {number} cycleMs 1周分の所要時間(ミリ秒、末尾の区切り7拍を含む)
  * @returns {number | null} 周期(秒)。60秒に収まらなければ null
  */
 export function choosePeriod(cycleMs) {
-  return PERIOD_CANDIDATES_SEC.find((p) => p * 1000 >= cycleMs) ?? null;
+  if (cycleMs > MAX_PERIOD_SEC * 1000) return null;
+  return Math.max(1, Math.ceil(cycleMs / 1000));
 }
 
 /**
  * URLで受け取った周期が使えるか判定する。参加側は周期を選び直さない。
+ * 以前の版が作った60の約数の周期(例: p=10、p=60)も、この条件で有効になる。
  *
  * @param {number} periodSec 周期(秒)
  * @param {number} cycleMs 1周分の所要時間(ミリ秒)
- * @returns {boolean} 60の約数で、かつ1周分の所要時間以上なら true
+ * @returns {boolean} 1〜60の整数で、かつ1周分の所要時間以上なら true
  */
 export function isValidPeriod(periodSec, cycleMs) {
   return (
-    PERIOD_CANDIDATES_SEC.includes(periodSec) && periodSec * 1000 >= cycleMs
+    Number.isInteger(periodSec) &&
+    periodSec >= 1 &&
+    periodSec <= MAX_PERIOD_SEC &&
+    periodSec * 1000 >= cycleMs
   );
 }

@@ -11,7 +11,7 @@ import { EN_TABLE } from '../../../public/js/core/tables/en.js';
 // 2026-01-01T00:00:00Z(分の0秒)
 const MINUTE_START_MS = Date.UTC(2026, 0, 1, 0, 0, 0);
 const UNIT_MS = 250;
-// SOS: 34拍 = 8.5秒 → 周期10秒
+// SOS: 34拍 = 8.5秒。以前の版が作った周期10秒(p=10)で検証する(新しい版では周期9秒)
 const PERIOD_MS = 10000;
 const timeline = buildTimeline(encodeMessage('SOS', EN_TABLE));
 
@@ -33,6 +33,34 @@ describe('currentCycleStart', () => {
     for (const offsetSec of [0, 15, 30, 45]) {
       const startMs = MINUTE_START_MS + offsetSec * 1000;
       expect(currentCycleStart(startMs + 1, 15000)).toBe(startMs);
+    }
+  });
+});
+
+describe('60の約数でない周期', () => {
+  const PERIOD_32_MS = 32000;
+
+  it('開始時刻はUNIX時刻0から周期の倍数で、毎分0秒とは限らない', () => {
+    // 基準の分の0秒は偶然32秒の倍数でもあるため、40秒後(次の開始は32秒後)で確かめる
+    const now = MINUTE_START_MS + 40000;
+    const start = currentCycleStart(now, PERIOD_32_MS);
+    expect(start).toBe(MINUTE_START_MS + 32000);
+    expect(start % PERIOD_32_MS).toBe(0);
+    expect(start % 60000).not.toBe(0);
+    expect(nextCycleStart(now, PERIOD_32_MS) - start).toBe(PERIOD_32_MS);
+  });
+
+  it('どの周期でも、開始時刻ちょうどは先頭の短点で点灯している', () => {
+    const start = currentCycleStart(MINUTE_START_MS, PERIOD_32_MS);
+    for (const k of [1, 2, 100]) {
+      const at = start + k * PERIOD_32_MS;
+      expect(stateAt(at, start, timeline, UNIT_MS, PERIOD_32_MS).isOn).toBe(
+        true
+      );
+      // 送信が終わった後(27拍 = 6750ms以降)は、次の開始時刻まで消灯
+      expect(
+        stateAt(at + 7000, start, timeline, UNIT_MS, PERIOD_32_MS).isOn
+      ).toBe(false);
     }
   });
 });

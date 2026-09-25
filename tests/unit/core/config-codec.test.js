@@ -29,7 +29,7 @@ const codesOf = (result) => (result.ok ? [] : result.errors.map((e) => e.code));
 
 describe('URL仕様 v=1 の互換性(配布済みのQRコードを壊さないための固定値テスト)', () => {
   // このテストを変更・削除する場合は仕様バージョンを上げること
-  it('PRDのURL例を読み込むと HELLO・周期15秒・1拍250ms・色 ffcc00 になる', () => {
+  it('以前の版のPRDのURL例(配布済みのQRコード)を読み込むと HELLO・周期15秒・1拍250ms・色 ffcc00 になる', () => {
     expect(parseHash('#v=1&l=en&m=HELLO&p=15&u=250&c=ffcc00')).toEqual({
       ok: true,
       config: HELLO_CONFIG,
@@ -129,9 +129,14 @@ describe('parseHash', () => {
     ]);
   });
 
-  it('p が60の約数でなければ INVALID_PERIOD を返す', () => {
-    expect(codesOf(parseHash('#v=1&m=HELLO&p=16'))).toEqual(['INVALID_PERIOD']);
+  it('p が1〜60の範囲外なら INVALID_PERIOD を返す', () => {
     expect(codesOf(parseHash('#v=1&m=HELLO&p=0'))).toEqual(['INVALID_PERIOD']);
+    expect(codesOf(parseHash('#v=1&m=HELLO&p=61'))).toEqual(['INVALID_PERIOD']);
+  });
+
+  it('p は60の約数でなくても、所要時間以上ならそのまま使う', () => {
+    const result = parseHash('#v=1&m=HELLO&p=16');
+    expect(result.ok && result.config.periodSec).toBe(16);
   });
 
   it('p が整数でなければ INVALID_PERIOD を返す', () => {
@@ -148,7 +153,7 @@ describe('parseHash', () => {
     expect(codesOf(parseHash('#v=1&m=HELLO&p=12'))).toEqual(['INVALID_PERIOD']);
   });
 
-  it('p は自動決定より長くても60の約数で所要時間以上なら、そのまま使う', () => {
+  it('以前の版が作った p(自動決定より長い60の約数)も、そのまま使う', () => {
     const result = parseHash('#v=1&m=HELLO&p=60');
     expect(result.ok && result.config.periodSec).toBe(60);
   });
@@ -189,7 +194,7 @@ describe('parseHash', () => {
   });
 
   it('複数の誤りはまとめて返す', () => {
-    expect(codesOf(parseHash('#v=1&m=&p=7&u=10&c=zzz'))).toEqual([
+    expect(codesOf(parseHash('#v=1&m=&p=70&u=10&c=zzz'))).toEqual([
       'EMPTY_MESSAGE',
       'UNIT_OUT_OF_RANGE',
       'INVALID_COLOR',
@@ -204,9 +209,18 @@ describe('buildFromInput', () => {
       buildFromInput({ message: ' sos ', unitMs: '250', color: '#FFCC00' })
     ).toEqual({
       ok: true,
-      config: { ...HELLO_CONFIG, message: 'SOS', periodSec: 10 },
+      config: { ...HELLO_CONFIG, message: 'SOS', periodSec: 9 },
       cycleMs: 8500,
     });
+  });
+
+  it('HELLO(14.0秒)は周期14秒になり、旧URL例の p=15 とは異なる', () => {
+    const result = buildFromInput({
+      message: 'HELLO',
+      unitMs: '250',
+      color: '#ffcc00',
+    });
+    expect(result.ok && result.config.periodSec).toBe(14);
   });
 
   it('HELLO WORLD(29.5秒)は周期30秒になる', () => {
