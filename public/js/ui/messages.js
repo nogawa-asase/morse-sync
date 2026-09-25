@@ -15,7 +15,7 @@ export const MESSAGES = Object.freeze({
   unitLabel: '1拍の長さ',
   unitSuffix: 'ミリ秒',
   colorLabel: '点灯色',
-  colorPreviewLabel: '点灯色のプレビュー',
+  colorHexLabel: '点灯色(16進)',
   codeLabel: '符号',
   cycleLabel: '1周の長さ',
   cycleUnknown: '—',
@@ -69,7 +69,7 @@ export const ERROR_MESSAGES = Object.freeze({
   UNIT_OUT_OF_RANGE: '1拍の長さは200〜2000ミリ秒で入力してください',
   TOO_LONG_FOR_60S:
     '60秒以内に収まりません。メッセージを短くするか、1拍を短くしてください',
-  INVALID_COLOR: '点灯色を選び直してください',
+  INVALID_COLOR: '点灯色は #ffcc00 のように6桁で入力してください',
   UNKNOWN_VERSION:
     'このQRコードは新しいバージョン用です。ページを再読み込みしてください',
   UNKNOWN_LANG: MESSAGES.invalidUrl,

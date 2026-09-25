@@ -202,16 +202,10 @@ h1 {
   cursor: pointer;
 }
 
-.color-text {
+.field__input--hex {
+  /* 幅320pxでもピッカーと同じ行に収まる幅 */
+  width: 6em;
   font-family: ui-monospace, monospace;
-}
-
-.color-swatch {
-  display: inline-block;
-  width: 3em;
-  height: var(--tap-size);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
 }
 
 .highlighted {

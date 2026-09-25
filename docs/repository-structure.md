@@ -132,6 +132,7 @@ platform/
 ui/
 ├── router.js              # startRouter。ハッシュで画面を切替、hashchange を監視
 ├── create-screen.js       # 作成画面
+├── color-field.js         # 作成画面の点灯色の欄(カラーピッカーと16進の入力欄の相互反映)
 ├── join-screen.js         # 参加画面(状態遷移の管理)
 ├── join-menu.js           # 参加画面のメニュー(自動で閉じるタイマーを含む)
 ├── join-flash.js          # 参加画面の「フラッシュも使う」オプション(カメラの取得・解放と状態)

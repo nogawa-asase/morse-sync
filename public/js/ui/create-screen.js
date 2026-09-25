@@ -16,6 +16,7 @@ import { shareUrl } from '../platform/share-helper.js';
 import { createElement, setVisible } from './dom.js';
 import { MESSAGES, formatError, formatCycle } from './messages.js';
 import { showQrOverlay } from './qr-overlay.js';
+import { createColorField } from './color-field.js';
 
 /** @typedef {import('../core/types.js').PatternConfig} PatternConfig */
 /** @typedef {import('../core/types.js').EncodedMessage} EncodedMessage */
@@ -79,17 +80,11 @@ export function mountCreateScreen(root, initial, navigate) {
   });
   unitInput.value = String(initial?.unitMs ?? DEFAULT_UNIT_MS);
 
-  const colorInput = createElement('input', {
-    className: 'field__color',
-    attrs: { id: 'color-input', type: 'color' },
-  });
-  colorInput.value = `#${initial?.color ?? DEFAULT_COLOR}`;
-
-  const colorText = createElement('span', { className: 'color-text' });
-  const colorSwatch = createElement('span', {
-    className: 'color-swatch',
-    attrs: { role: 'img', 'aria-label': MESSAGES.colorPreviewLabel },
-  });
+  const colorField = createColorField(
+    'color-input',
+    initial?.color ?? DEFAULT_COLOR,
+    () => update()
+  );
   const highlighted = createElement('p', { className: 'highlighted' });
   const codeText = createElement('p', {
     className: 'code-text',
@@ -209,9 +204,8 @@ export function mountCreateScreen(root, initial, navigate) {
           text: MESSAGES.colorLabel,
           attrs: { for: 'color-input' },
         }),
-        colorInput,
-        colorText,
-        colorSwatch,
+        colorField.picker,
+        colorField.hexInput,
       ]),
       createElement('p', { className: 'cycle' }, [
         document.createTextNode(`${MESSAGES.cycleLabel}: `),
@@ -226,7 +220,7 @@ export function mountCreateScreen(root, initial, navigate) {
     const input = {
       message: messageInput.value,
       unitMs: unitInput.value,
-      color: colorInput.value,
+      color: colorField.getValue(),
     };
     const preview = previewInput(input);
     const result = buildFromInput(input);
@@ -241,8 +235,6 @@ export function mountCreateScreen(root, initial, navigate) {
       preview.cycleMs === null
         ? MESSAGES.cycleUnknown
         : formatCycle(preview.cycleMs);
-    colorText.textContent = colorInput.value;
-    colorSwatch.style.backgroundColor = colorInput.value;
 
     errorList.replaceChildren(
       ...(result.ok
@@ -252,6 +244,9 @@ export function mountCreateScreen(root, initial, navigate) {
           ))
     );
     messageInput.setAttribute('aria-invalid', String(!result.ok));
+    colorField.setInvalid(
+      !result.ok && result.errors.some((e) => e.code === 'INVALID_COLOR')
+    );
 
     clearTimeout(qrTimerId);
     shareStatus.textContent = '';
@@ -272,7 +267,6 @@ export function mountCreateScreen(root, initial, navigate) {
 
   messageInput.addEventListener('input', update);
   unitInput.addEventListener('input', update);
-  colorInput.addEventListener('input', update);
 
   root.append(screen);
   update();

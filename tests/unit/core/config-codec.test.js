@@ -270,6 +270,23 @@ describe('buildFromInput', () => {
     ).toEqual(['INVALID_COLOR']);
   });
 
+  it.each(['#006eff', '006eff', '#006EFF', ' #006eff '])(
+    '色 "%s" は # の有無・大文字・前後の空白にかかわらず 006eff になる',
+    (color) => {
+      const result = buildFromInput({ message: 'E', unitMs: '250', color });
+      expect(result.ok && result.config.color).toBe('006eff');
+    }
+  );
+
+  it.each(['#006e', '#006eff0', '#00gg00', ''])(
+    '色 "%s" は6桁の16進でないので INVALID_COLOR を返す',
+    (color) => {
+      expect(
+        codesOf(buildFromInput({ message: 'E', unitMs: '250', color }))
+      ).toEqual(['INVALID_COLOR']);
+    }
+  );
+
   it('複数のエラーを同時に返す', () => {
     expect(
       codesOf(buildFromInput({ message: 'あ', unitMs: '10', color: 'x' }))

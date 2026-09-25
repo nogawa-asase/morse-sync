@@ -200,7 +200,8 @@ export function buildFromInput(input) {
   const unitMs = parseUnitMs(input.unitMs);
   if (unitMs === null) errors.push({ code: 'UNIT_OUT_OF_RANGE' });
 
-  const color = parseColor(input.color.replace(/^#/, ''));
+  // 入力欄への貼り付けで前後に空白が入ることがあるため除く。'#' はあってもなくてもよい
+  const color = parseColor(input.color.trim().replace(/^#/, ''));
   if (color === null) errors.push({ code: 'INVALID_COLOR' });
 
   if (message.errors.length > 0 || unitMs === null) {
